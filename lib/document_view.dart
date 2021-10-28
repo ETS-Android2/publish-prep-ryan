@@ -18,35 +18,14 @@ class DocumentView extends StatefulWidget {
 class _DocumentViewState extends State<DocumentView> {
   @override
   Widget build(BuildContext context) {
-  final String viewType = 'pdftron_flutter/documentview';
-
     if (Platform.isAndroid) {
       return AndroidView(
         viewType: 'pdftron_flutter/documentview',
         onPlatformViewCreated: _onPlatformViewCreated,
       );
-/*      return PlatformViewLink(
-          viewType: viewType,
-          surfaceFactory: (BuildContext context, PlatformViewController controller) {
-            return AndroidViewSurface(
-              controller: controller as AndroidViewController, 
-              hitTestBehavior: PlatformViewHitTestBehavior.opaque, 
-              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>[].toSet()
-            );
-          }, 
-          onCreatePlatformView: (PlatformViewCreationParams params) {
-            return PlatformViewsService.initSurfaceAndroidView(
-              id: params.id,
-              viewType: viewType,
-              layoutDirection: TextDirection.ltr,
-            )
-              ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-              ..addOnPlatformViewCreatedListener(_onPlatformViewCreated)
-              ..create();
-          });*/
     } else if (Platform.isIOS) {
       return UiKitView(
-        viewType: viewType,
+        viewType: 'pdftron_flutter/documentview',
         onPlatformViewCreated: _onPlatformViewCreated,
       );
     }
@@ -57,28 +36,6 @@ class _DocumentViewState extends State<DocumentView> {
     widget.onCreated(new DocumentViewController._(id));
   }
 }
-
-/*class _DocumentViewState extends State<DocumentView> {
-  @override
-  Widget build(BuildContext context) {
-    if (Platform.isAndroid) {
-      return AndroidView(
-        viewType: 'pdftron_flutter/documentview',
-        onPlatformViewCreated: _onPlatformViewCreated,
-      );
-    } else if (Platform.isIOS) {
-      return UiKitView(
-        viewType: 'pdftron_flutter/documentview',
-        onPlatformViewCreated: _onPlatformViewCreated,
-      );
-    }
-    return Text('coming soon');
-  }
-
-  void _onPlatformViewCreated(int id) {
-    widget.onCreated(new DocumentViewController._(id));
-  }
-}*/
 
 /// Used to initialize and control the [DocumentView] widget.
 class DocumentViewController {
@@ -176,17 +133,6 @@ class DocumentViewController {
         <String, dynamic>{Parameters.bookmarkJson: bookmarkJson});
   }
 
-  /// Creates a new bookmark with the given title and page number.
-  /// 
-  /// [pageNumber] is 1-indexed
-  Future<void> addBookmark(String title, int pageNumber) {
-    return _channel
-        .invokeMethod(Functions.addBookmark, <String, dynamic>{
-      Parameters.title: title,
-      Parameters.pageNumber: pageNumber
-    });
-  }
-
   /// Saves the currently opened document in the viewer.
   ///
   /// Also gets the absolute path to the document. Must only
@@ -217,7 +163,7 @@ class DocumentViewController {
 
   /// Gets a map object of the crop box for the specified page.
   ///
-  /// [pageNumber] is 1-indexed.
+  /// The specified page number is 1-indexed.
   Future<Rect> getPageCropBox(int pageNumber) async {
     String cropBoxString = await _channel.invokeMethod(Functions.getPageCropBox,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -226,7 +172,7 @@ class DocumentViewController {
 
   /// Gets the rotation value of the specified page in the current document.
   ///
-  /// [pageNumber] is 1-indexed.
+  /// The specified page number is 1-indexed.
   Future<int> getPageRotation(int pageNumber) async {
     int pageRotation = await _channel.invokeMethod(Functions.getPageRotation,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -235,7 +181,7 @@ class DocumentViewController {
 
   /// Sets current page of the document.
   ///
-  /// [pageNumber] is 1-indexed.
+  /// The specified page number is 1-indexed.
   Future<bool?> setCurrentPage(int pageNumber) {
     return _channel.invokeMethod(Functions.setCurrentPage,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -307,7 +253,7 @@ class DocumentViewController {
     return _channel.invokeMethod(Functions.openAnnotationList);
   }
 
-  /// Displays the bookmark tab of the existing list container. 
+/*  /// Displays the bookmark tab of the existing list container.
   /// 
   /// If this tab has been disabled, the method does nothing.
   Future<void> openBookmarkList() {
@@ -364,5 +310,5 @@ class DocumentViewController {
   /// The page numbers returned are 1-indexed.
   Future<int?> getCurrentPage() {
     return _channel.invokeMethod(Functions.getCurrentPage);
-  }
+  }*/
 }
