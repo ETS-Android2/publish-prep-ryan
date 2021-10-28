@@ -253,7 +253,7 @@ class DocumentViewController {
     return _channel.invokeMethod(Functions.openAnnotationList);
   }
 
-  /// Displays the bookmark tab of the existing list container. 
+/*  /// Displays the bookmark tab of the existing list container.
   /// 
   /// If this tab has been disabled, the method does nothing.
   Future<void> openBookmarkList() {
@@ -310,5 +310,5 @@ class DocumentViewController {
   /// The page numbers returned are 1-indexed.
   Future<int?> getCurrentPage() {
     return _channel.invokeMethod(Functions.getCurrentPage);
-  }
+  }*/
 }
