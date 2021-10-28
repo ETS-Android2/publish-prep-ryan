@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL signSignatureFieldsWithStamps;
 @property (nonatomic, assign) BOOL selectAnnotationAfterCreation;
 @property (nonatomic, assign, getter=isBottomToolbarOn) BOOL bottomToolbarOn;
-@property (nonatomic, copy, nullable) NSString* defaultEraserType;
 
 @property (nonatomic, copy, nullable) NSArray<NSString *> * annotationToolbars;
 @property (nonatomic, copy, nullable) NSArray<NSString *> * hideDefaultAnnotationToolbars;
@@ -74,6 +73,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)shouldSetToolbarHidden:(BOOL)toolbarHidden animated:(BOOL)animated;
 
 - (void)hideViewModeItems:(NSArray<NSString *> *)viewModeItems;
+
+// Xorbix
+- (void)markupOptionSelected:(BOOL)markupSelected;
+@property (nonatomic) BOOL markupOptionSelected;
 
 @end
 
