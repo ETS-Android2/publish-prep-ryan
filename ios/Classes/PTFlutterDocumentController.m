@@ -121,6 +121,12 @@ static BOOL PT_addMethod(Class cls, SEL selector, void (^block)(id))
     return !self.topAppNavBarHidden;;
 }
 
+- (void)markupOptionSelected:(BOOL) markupSelected
+{
+    _markupOptionSelected = markupSelected;
+    [self setControlsHidden:false animated: true];
+}
+
 - (BOOL)controlsHidden
 {
     if (self.navigationController) {
@@ -136,6 +142,8 @@ static BOOL PT_addMethod(Class cls, SEL selector, void (^block)(id))
 
 - (void)setControlsHidden:(BOOL)controlsHidden animated:(BOOL)animated
 {
+    // Xorbix - use this if we want to be able to control when tools are shown/hidden based on user selected markup options
+    BOOL hideControls = controlsHidden || !_markupOptionSelected;
     [super setControlsHidden:controlsHidden animated:animated];
     
     // When the top toolbars are enabled...
@@ -165,15 +173,6 @@ static BOOL PT_addMethod(Class cls, SEL selector, void (^block)(id))
 
             [toolManager annotationOptionsForAnnotType:typeToSetPermission].canEdit = value;
         }
-    }
-}
-
-- (void)setDefaultEraserType:(NSString *)defaultEraserType {
-    PTToolManager *toolManager = self.toolManager;
-    if ([defaultEraserType isEqualToString:PTInkEraserModeAllKey]) {
-        toolManager.eraserMode = PTInkEraserModeAll;
-    } else if ([defaultEraserType isEqualToString:PTInkEraserModePointsKey]) {
-        toolManager.eraserMode = PTInkEraserModePoints;
     }
 }
 
