@@ -133,17 +133,6 @@ class DocumentViewController {
         <String, dynamic>{Parameters.bookmarkJson: bookmarkJson});
   }
 
-  /// Creates a new bookmark with the given title and page number.
-  /// 
-  /// [pageNumber] is 1-indexed
-  Future<void> addBookmark(String title, int pageNumber) {
-    return _channel
-        .invokeMethod(Functions.addBookmark, <String, dynamic>{
-      Parameters.title: title,
-      Parameters.pageNumber: pageNumber
-    });
-  }
-
   /// Saves the currently opened document in the viewer.
   ///
   /// Also gets the absolute path to the document. Must only
@@ -174,7 +163,7 @@ class DocumentViewController {
 
   /// Gets a map object of the crop box for the specified page.
   ///
-  /// [pageNumber] is 1-indexed.
+  /// The specified page number is 1-indexed.
   Future<Rect> getPageCropBox(int pageNumber) async {
     String cropBoxString = await _channel.invokeMethod(Functions.getPageCropBox,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -183,7 +172,7 @@ class DocumentViewController {
 
   /// Gets the rotation value of the specified page in the current document.
   ///
-  /// [pageNumber] is 1-indexed.
+  /// The specified page number is 1-indexed.
   Future<int> getPageRotation(int pageNumber) async {
     int pageRotation = await _channel.invokeMethod(Functions.getPageRotation,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -192,7 +181,7 @@ class DocumentViewController {
 
   /// Sets current page of the document.
   ///
-  /// [pageNumber] is 1-indexed.
+  /// The specified page number is 1-indexed.
   Future<bool?> setCurrentPage(int pageNumber) {
     return _channel.invokeMethod(Functions.setCurrentPage,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
