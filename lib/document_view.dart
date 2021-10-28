@@ -15,7 +15,7 @@ class DocumentView extends StatefulWidget {
   State<StatefulWidget> createState() => _DocumentViewState();
 }
 
-class _DocumentViewState extends State<DocumentView> {
+/*class _DocumentViewState extends State<DocumentView> {
   @override
   Widget build(BuildContext context) {
   final String viewType = 'pdftron_flutter/documentview';
@@ -43,6 +43,28 @@ class _DocumentViewState extends State<DocumentView> {
     } else if (Platform.isIOS) {
       return UiKitView(
         viewType: viewType,
+        onPlatformViewCreated: _onPlatformViewCreated,
+      );
+    }
+    return Text('coming soon');
+  }
+
+  void _onPlatformViewCreated(int id) {
+    widget.onCreated(new DocumentViewController._(id));
+  }
+}*/
+
+class _DocumentViewState extends State<DocumentView> {
+  @override
+  Widget build(BuildContext context) {
+    if (Platform.isAndroid) {
+      return AndroidView(
+        viewType: 'pdftron_flutter/documentview',
+        onPlatformViewCreated: _onPlatformViewCreated,
+      );
+    } else if (Platform.isIOS) {
+      return UiKitView(
+        viewType: 'pdftron_flutter/documentview',
         onPlatformViewCreated: _onPlatformViewCreated,
       );
     }
