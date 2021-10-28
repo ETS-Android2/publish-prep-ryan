@@ -15,7 +15,7 @@ class DocumentView extends StatefulWidget {
   State<StatefulWidget> createState() => _DocumentViewState();
 }
 
-/*class _DocumentViewState extends State<DocumentView> {
+class _DocumentViewState extends State<DocumentView> {
   @override
   Widget build(BuildContext context) {
   final String viewType = 'pdftron_flutter/documentview';
@@ -52,9 +52,9 @@ class DocumentView extends StatefulWidget {
   void _onPlatformViewCreated(int id) {
     widget.onCreated(new DocumentViewController._(id));
   }
-}*/
+}
 
-class _DocumentViewState extends State<DocumentView> {
+/*class _DocumentViewState extends State<DocumentView> {
   @override
   Widget build(BuildContext context) {
     if (Platform.isAndroid) {
@@ -74,7 +74,7 @@ class _DocumentViewState extends State<DocumentView> {
   void _onPlatformViewCreated(int id) {
     widget.onCreated(new DocumentViewController._(id));
   }
-}
+}*/
 
 /// Used to initialize and control the [DocumentView] widget.
 class DocumentViewController {
