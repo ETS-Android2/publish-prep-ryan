@@ -15,7 +15,6 @@ import com.pdftron.pdf.Field;
 import com.pdftron.pdf.PDFDoc;
 import com.pdftron.pdf.PDFViewCtrl;
 import com.pdftron.pdf.Page;
-import com.pdftron.pdf.PageSet;
 import com.pdftron.pdf.Rect;
 import com.pdftron.pdf.ViewChangeCollection;
 import com.pdftron.pdf.annots.Markup;
@@ -27,6 +26,7 @@ import com.pdftron.pdf.controls.PdfViewCtrlTabFragment2;
 import com.pdftron.pdf.controls.PdfViewCtrlTabHostFragment2;
 import com.pdftron.pdf.controls.ThumbnailsViewFragment;
 import com.pdftron.pdf.dialog.ViewModePickerDialogFragment;
+import com.pdftron.pdf.dialog.pdflayer.PdfLayerDialog;
 import com.pdftron.pdf.model.AnnotStyle;
 import com.pdftron.pdf.tools.AdvancedShapeCreate;
 import com.pdftron.pdf.tools.AnnotEditRectGroup;
@@ -44,7 +44,6 @@ import com.pdftron.pdf.widget.toolbar.builder.AnnotationToolbarBuilder;
 import com.pdftron.pdf.widget.toolbar.builder.ToolbarButtonType;
 import com.pdftron.pdf.widget.toolbar.component.DefaultToolbars;
 import com.pdftron.pdftronflutter.R;
-import com.pdftron.sdf.SDFDoc;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -87,13 +86,6 @@ public class PluginUtils {
     public static final String KEY_ANNOTATION_PROPERTIES = "annotationProperties";
     public static final String KEY_LEADING_NAV_BUTTON_ICON = "leadingNavButtonIcon";
     public static final String KEY_REQUESTED_ORIENTATION = "requestedOrientation";
-
-    // Xorbix
-    public static final String KEY_MARKUP_SELECTED = "markupSelected";
-    public static final String KEY_SOURCE_DOC_PATH = "sourceDocPath";
-    public static final String KEY_START_PAGE = "startPage";
-    public static final String KEY_END_PAGE = "endPage";
-    public static final String KEY_XORBIX_ANNOTATIONS = "annotations";
 
     public static final String KEY_CONFIG_DISABLED_ELEMENTS = "disabledElements";
     public static final String KEY_CONFIG_DISABLED_TOOLS = "disabledTools";
@@ -223,10 +215,16 @@ public class PluginUtils {
     public static final String FUNCTION_GET_PAGE_ROTATION = "getPageRotation";
     public static final String FUNCTION_OPEN_ANNOTATION_LIST = "openAnnotationList";
     public static final String FUNCTION_SET_REQUESTED_ORIENTATION = "setRequestedOrientation";
-
-    // Xorbix
-    public static final String FUNCTION_MARKUP_OPTION_SELECTED = "markupOptionSelected";
-    public static final String FUNCTION_CREATE_DOC_FROM_PAGE_RANGE_WITH_ANNOTATIONS = "createDocFromPageRangeWithAnnotations";
+    public static final String FUNCTION_GO_TO_PREVIOUS_PAGE = "gotoPreviousPage";
+    public static final String FUNCTION_GO_TO_NEXT_PAGE = "gotoNextPage";
+    public static final String FUNCTION_GO_TO_FIRST_PAGE = "gotoFirstPage";
+    public static final String FUNCTION_GO_TO_LAST_PAGE = "gotoLastPage";
+    public static final String FUNCTION_ADD_BOOKMARK = "addBookmark";
+    public static final String FUNCTION_OPEN_BOOKMARK_LIST = "openBookmarkList";
+    public static final String FUNCTION_OPEN_OUTLINE_LIST = "openOutlineList";
+    public static final String FUNCTION_OPEN_LAYERS_LIST = "openLayersList";
+    public static final String FUNCTION_OPEN_NAVIGATION_LISTS = "openNavigationLists";
+    public static final String FUNCTION_GET_CURRENT_PAGE = "getCurrentPage";
 
     public static final String BUTTON_TOOLS = "toolsButton";
     public static final String BUTTON_SEARCH = "searchButton";
@@ -843,7 +841,6 @@ public class PluginUtils {
                 }
                 if (!configJson.isNull(KEY_CONFIG_PERMANENT_PAGE_NUMBER_INDICATOR)) {
                     boolean permanentPageNumberIndicator = configJson.getBoolean(KEY_CONFIG_PERMANENT_PAGE_NUMBER_INDICATOR);
-                    PdfViewCtrlSettingsManager.setShowScrollbarOption(context, true);
                     builder.permanentPageNumberIndicator(permanentPageNumberIndicator);
                 }
                 if (!configJson.isNull(KEY_CONFIG_OPEN_URL_PATH)) {
@@ -1753,13 +1750,8 @@ public class PluginUtils {
             }
             case FUNCTION_OPEN_ANNOTATION_LIST: {
                 checkFunctionPrecondition(component);
-                openAnnotationList(component);
+                openAnnotationList(result, component);
                 break;
-            }
-            case FUNCTION_MARKUP_OPTION_SELECTED: {
-                checkFunctionPrecondition(component);
-                boolean markupSelected = call.argument(KEY_MARKUP_SELECTED);
-                markupOptionSelected(component, markupSelected);
             }
             case FUNCTION_IMPORT_ANNOTATION_COMMAND: {
                 checkFunctionPrecondition(component);
@@ -1892,19 +1884,59 @@ public class PluginUtils {
                 }
                 break;
             }
-            case FUNCTION_CREATE_DOC_FROM_PAGE_RANGE_WITH_ANNOTATIONS: {
-                String sourceDocPath = call.argument(KEY_SOURCE_DOC_PATH);
-                Integer startPage = call.argument(KEY_START_PAGE);
-                Integer endPage = call.argument(KEY_END_PAGE);
-                String annotations = call.argument(KEY_XORBIX_ANNOTATIONS);
-                if (sourceDocPath != null && startPage != null && endPage != null && annotations != null) {
-                    try {
-                        createDocFromPageRangeWithAnnotations(sourceDocPath, startPage, endPage, annotations, result);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        result.error("Exception", ex.getMessage(), null);
-                    }
+            case FUNCTION_GO_TO_PREVIOUS_PAGE: {
+                checkFunctionPrecondition(component);
+                gotoPreviousPage(result, component);
+                break;
+            }
+            case FUNCTION_GO_TO_NEXT_PAGE: {
+                checkFunctionPrecondition(component);
+                gotoNextPage(result, component);
+                break;
+            }
+            case FUNCTION_GO_TO_FIRST_PAGE: {
+                checkFunctionPrecondition(component);
+                gotoFirstPage(result, component);
+                break;
+            }
+            case FUNCTION_GO_TO_LAST_PAGE: {
+                checkFunctionPrecondition(component);
+                gotoLastPage(result, component);
+                break;
+            }
+            case FUNCTION_ADD_BOOKMARK: {
+                checkFunctionPrecondition(component);
+                String title = call.argument(KEY_TITLE);
+                Integer pageNumber = call.argument(KEY_PAGE_NUMBER);
+                if (title != null && pageNumber != null) {
+                    addBookmark(title, pageNumber, result, component);
                 }
+                break;
+            }
+            case FUNCTION_OPEN_BOOKMARK_LIST: {
+                checkFunctionPrecondition(component);
+                openBookmarkList(result, component);
+                break;
+            }
+            case FUNCTION_OPEN_LAYERS_LIST: {
+                checkFunctionPrecondition(component);
+                openLayersList(result, component);
+                break;
+            }
+            case FUNCTION_OPEN_OUTLINE_LIST: {
+                checkFunctionPrecondition(component);
+                openOutlineList(result, component);
+                break;
+            }
+            case FUNCTION_OPEN_NAVIGATION_LISTS: {
+                checkFunctionPrecondition(component);
+                openNavigationLists(result, component);
+                break;
+            }
+            case FUNCTION_GET_CURRENT_PAGE: {
+                checkFunctionPrecondition(component);
+                getCurrentPage(result, component);
+                break;
             }
             default:
                 Log.e("PDFTronFlutter", "notImplemented: " + call.method);
@@ -2102,65 +2134,91 @@ public class PluginUtils {
         }
     }
 
-    private static void openAnnotationList(ViewerComponent component) {
+    private static void openAnnotationList(MethodChannel.Result result, ViewerComponent component) {
+        PdfViewCtrlTabHostFragment2 pdfViewCtrlTabHostFragment2 = component.getPdfViewCtrlTabHostFragment();
+        if (pdfViewCtrlTabHostFragment2 == null) {
+            result.error("InvalidState", "Activity not attached", null);
+            return;
+        }
+
         if (isBookmarkListVisible) {
             if (isOutlineListVisible) {
                 if (isAnnotationListVisible) {
-                    component.getPdfViewCtrlTabHostFragment().onOutlineOptionSelected(2);
+                    pdfViewCtrlTabHostFragment2.onOutlineOptionSelected(2);
                 }
             } else {
                 if (isAnnotationListVisible) {
-                    component.getPdfViewCtrlTabHostFragment().onOutlineOptionSelected(1);
+                    pdfViewCtrlTabHostFragment2.onOutlineOptionSelected(1);
                 }
             }
         } else {
             if (isOutlineListVisible) {
                 if (isAnnotationListVisible) {
-                    component.getPdfViewCtrlTabHostFragment().onOutlineOptionSelected(1);
+                    pdfViewCtrlTabHostFragment2.onOutlineOptionSelected(1);
                 }
             } else {
                 if (isAnnotationListVisible) {
-                    component.getPdfViewCtrlTabHostFragment().onOutlineOptionSelected(0);
+                    pdfViewCtrlTabHostFragment2.onOutlineOptionSelected(0);
                 }
             }
         }
     }
 
-    private static void markupOptionSelected(ViewerComponent component, boolean markupSelected) {
-        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
-        ToolManager toolManager = component.getToolManager();
+    private static void openBookmarkList(MethodChannel.Result result, ViewerComponent component) {
+        PdfViewCtrlTabHostFragment2 pdfViewCtrlTabHostFragment2 = component.getPdfViewCtrlTabHostFragment();
+        if (pdfViewCtrlTabHostFragment2 == null) {
+            result.error("InvalidState", "Activity not attached", null);
+            return;
+        }
 
-        // TODO: Figure out how to force show/hide the toolbars from here
+        if (isBookmarkListVisible) {
+            component.getPdfViewCtrlTabHostFragment().onOutlineOptionSelected(0);
+        }
     }
 
-    private static void createDocFromPageRangeWithAnnotations(String sourceDocPath, int startPage, int endPage, String annotations, MethodChannel.Result result) {
-        PDFDoc sourceDoc = null;
-        PDFDoc docToSend = null;
-
-        try {
-            sourceDoc = new PDFDoc(sourceDocPath);
-            docToSend = new PDFDoc();
-
-            PageSet pageSet = new PageSet(startPage, endPage);
-
-            docToSend.insertPages(0, sourceDoc, pageSet, PDFDoc.InsertBookmarkMode.NONE, null);
-
-            FDFDoc annotData = new FDFDoc(annotations);
-
-            docToSend.fdfMerge(annotData);
-
-            byte[] docData = docToSend.save(SDFDoc.SaveMode.COMPATIBILITY, null);
-            result.success(Base64.encodeToString(docData, Base64.DEFAULT));
-        } catch (Exception e) {
-            // do something
-            result.error("Error creating new document", e.getMessage(), null);
-        } finally {
-            try {
-                if (sourceDoc != null) sourceDoc.close();
-                if (docToSend != null) docToSend.close();
-            } catch (Exception ex) {
-            }
+    private static void openOutlineList(MethodChannel.Result result, ViewerComponent component) {
+        PdfViewCtrlTabHostFragment2 pdfViewCtrlTabHostFragment2 = component.getPdfViewCtrlTabHostFragment();
+        if (pdfViewCtrlTabHostFragment2 == null) {
+            result.error("InvalidState", "Activity not attached", null);
+            return;
         }
+
+        if (isBookmarkListVisible) {
+            pdfViewCtrlTabHostFragment2.onOutlineOptionSelected(1);
+        } else {
+            pdfViewCtrlTabHostFragment2.onOutlineOptionSelected(0);
+        }
+    }
+
+    private static void openLayersList(MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        if (pdfViewCtrl == null) {
+            result.error("InvalidState", "Activity not attached", null);
+            return;
+        }
+
+        PdfLayerDialog pdfLayerDialog = new PdfLayerDialog(pdfViewCtrl.getContext(), pdfViewCtrl);
+        pdfLayerDialog.show();
+    }
+
+    private static void openNavigationLists(MethodChannel.Result result, ViewerComponent component) {
+        PdfViewCtrlTabHostFragment2 pdfViewCtrlTabHostFragment2 = component.getPdfViewCtrlTabHostFragment();
+        if (pdfViewCtrlTabHostFragment2 == null) {
+            result.error("InvalidState", "Activity not attached", null);
+            return;
+        }
+
+        pdfViewCtrlTabHostFragment2.onOutlineOptionSelected();
+    }
+
+    private static void getCurrentPage(MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        if (pdfViewCtrl == null) {
+            result.error("InvalidState", "Activity not attached", null);
+            return;
+        }
+
+        result.success(pdfViewCtrl.getCurrentPage());
     }
 
     private static void setFlagsForAnnotations(String annotationsWithFlags, MethodChannel.Result result, ViewerComponent component) throws PDFNetException, JSONException {
@@ -2411,6 +2469,10 @@ public class PluginUtils {
             return;
         }
         BookmarkManager.importPdfBookmarks(pdfViewCtrl, bookmarkJson);
+        PdfViewCtrlTabHostFragment2 hostFragment2 = component.getPdfViewCtrlTabHostFragment();
+        if (hostFragment2 != null) {
+            hostFragment2.reloadUserBookmarks();
+        }
         result.success(null);
     }
 
@@ -2683,6 +2745,73 @@ public class PluginUtils {
             }
         }
         result.success(pageRotation);
+    }
+
+    private static void gotoPreviousPage(MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        if (pdfViewCtrl == null) {
+            result.error("InvalidState", "PDFViewCtrl not found", null);
+            return;
+        }
+        boolean pageChanged = pdfViewCtrl.gotoPreviousPage();
+        result.success(pageChanged);
+    }
+
+    private static void gotoNextPage(MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        if (pdfViewCtrl == null) {
+            result.error("InvalidState", "PDFViewCtrl not found", null);
+            return;
+        }
+        boolean pageChanged = pdfViewCtrl.gotoNextPage();
+        result.success(pageChanged);
+    }
+
+    private static void gotoFirstPage(MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        if (pdfViewCtrl == null) {
+            result.error("InvalidState", "PDFViewCtrl not found", null);
+            return;
+        }
+        boolean pageChanged = pdfViewCtrl.gotoFirstPage();
+        result.success(pageChanged);
+    }
+
+    private static void gotoLastPage(MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        if (pdfViewCtrl == null) {
+            result.error("InvalidState", "PDFViewCtrl not found", null);
+            return;
+        }
+        boolean pageChanged = pdfViewCtrl.gotoLastPage();
+        result.success(pageChanged);
+    }
+
+    private static void addBookmark(String title, Integer pageNumber, MethodChannel.Result result, ViewerComponent component) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        PDFDoc pdfDoc = component.getPdfDoc();
+        if (pdfViewCtrl == null || pdfDoc == null ) {
+            result.error("InvalidState", "PDFViewCtrl not found", null);
+            return;
+        }
+
+        boolean shouldUnlock = false;
+        try {
+            pdfViewCtrl.docLock(true);
+            shouldUnlock = true;
+
+            String jsonString = BookmarkManager.exportPdfBookmarks(pdfDoc);
+            JSONObject jsonObject = new JSONObject(jsonString);
+            jsonObject.put(pageNumber.toString(), title);
+            jsonString = jsonObject.toString();
+            importBookmarkJson(jsonString, result, component);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (shouldUnlock) {
+                pdfViewCtrl.docUnlock();
+            }
+        }
     }
 
     // Events
