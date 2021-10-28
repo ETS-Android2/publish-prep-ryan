@@ -250,7 +250,7 @@ class DocumentViewController {
     return _channel.invokeMethod(Functions.openAnnotationList);
   }
 
-/*  /// Determines visibility of toolbar
+  /// Determines visibility of toolbar
   /// Xorbix function
   Future<void> markupOptionSelected(bool markupSelected) {
     return _channel.invokeMethod(Functions.markupOptionSelected,
@@ -268,5 +268,5 @@ class DocumentViewController {
         Parameters.endPage: endPage,
         Parameters.xorbixAnnotations: annotations
       });
-  }*/
+  }
 }
