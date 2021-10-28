@@ -31,16 +31,6 @@ class Functions {
   static const deleteAllAnnotations = "deleteAllAnnotations";
   static const openAnnotationList = "openAnnotationList";
   static const setRequestedOrientation = "setRequestedOrientation";
-  static const gotoPreviousPage = "gotoPreviousPage";
-  static const gotoNextPage = "gotoNextPage";
-  static const gotoFirstPage = "gotoFirstPage";
-  static const gotoLastPage = "gotoLastPage";
-  static const addBookmark = "addBookmark";
-  static const openBookmarkList = "openBookmarkList";
-  static const openOutlineList = "openOutlineList";
-  static const openLayersList = "openLayersList";
-  static const openNavigationLists = "openNavigationLists";
-  static const getCurrentPage = "getCurrentPage";
 }
 
 /// Defines the parameters of the functions.
@@ -53,7 +43,6 @@ class Parameters {
   static const xfdf = "xfdf";
   static const bookmarkJson = "bookmarkJson";
   static const pageNumber = "pageNumber";
-  static const title = "title";
   static const toolMode = "toolMode";
   static const fieldNames = "fieldNames";
   static const fields = "fields";

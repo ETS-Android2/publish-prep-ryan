@@ -84,14 +84,16 @@ class _ViewerState extends State<Viewer> {
     // Opening without a config file will have all functionality enabled.
     // await PdftronFlutter.openDocument(_document);
 
+    // Shows how to disable functionality.
+    // var disabledElements = [Buttons.shareButton, Buttons.searchButton];
+    // var disabledTools = [Tools.annotationCreateLine, Tools.annotationCreateRectangle];
     var config = Config();
-    // How to disable functionality:
-    //      config.disabledElements = [Buttons.shareButton, Buttons.searchButton];
-    //      config.disabledTools = [Tools.annotationCreateLine, Tools.annotationCreateRectangle];
-    //      config.multiTabEnabled = true;
-    //      config.customHeaders = {'headerName': 'headerValue'};
+    // config.disabledElements = disabledElements;
+    // config.disabledTools = disabledTools;
+    // config.multiTabEnabled = true;
+    // config.customHeaders = {'headerName': 'headerValue'};
 
-    // An event listener for document loading
+    // An event listener for document loading.
     var documentLoadedCancel = startDocumentLoadedListener((filePath) {
       print("document loaded: $filePath");
     });
@@ -141,7 +143,7 @@ class _ViewerState extends State<Viewer> {
         }
         print(command.substring(start));
       } else {
-        print(command);
+        print("flutter xfdfCommand:\n $command");
       }
     });
 
@@ -163,16 +165,6 @@ class _ViewerState extends State<Viewer> {
 
   @override
   Widget build(BuildContext context) {
-    // If using Android Widget, uncomment one of the following:
-    // If using Flutter v2.3.0-17.0.pre or earlier.
-    // SystemChrome.setEnabledSystemUIOverlays(
-    //   SystemUiOverlay.values
-    // );
-    // If using later Flutter versions.
-    // SystemChrome.setEnabledSystemUIMode(
-    //   SystemUiMode.edgeToEdge,
-    // );
-    
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -180,10 +172,9 @@ class _ViewerState extends State<Viewer> {
         child:
             // Uncomment this to use Widget version of the viewer:
             // _showViewer
-            // ? SafeArea (
-            //   child: DocumentView(
+            // ? DocumentView(
             //     onCreated: _onDocumentViewCreated,
-            //   )):
+            //   ):
             Container(),
       ),
     );
