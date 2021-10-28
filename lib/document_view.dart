@@ -21,7 +21,11 @@ class _DocumentViewState extends State<DocumentView> {
   final String viewType = 'pdftron_flutter/documentview';
 
     if (Platform.isAndroid) {
-      return PlatformViewLink(
+      return AndroidView(
+        viewType: 'pdftron_flutter/documentview',
+        onPlatformViewCreated: _onPlatformViewCreated,
+      );
+/*      return PlatformViewLink(
           viewType: viewType,
           surfaceFactory: (BuildContext context, PlatformViewController controller) {
             return AndroidViewSurface(
@@ -39,7 +43,7 @@ class _DocumentViewState extends State<DocumentView> {
               ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
               ..addOnPlatformViewCreatedListener(_onPlatformViewCreated)
               ..create();
-          });
+          });*/
     } else if (Platform.isIOS) {
       return UiKitView(
         viewType: viewType,
