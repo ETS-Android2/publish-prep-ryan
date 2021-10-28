@@ -1202,6 +1202,15 @@
         [self deleteAllAnnotations:result];
     } else if ([call.method isEqualToString:PTOpenAnnotationListKey]) {
         [self openAnnotationList:result];
+    } else if ([call.method isEqualToString:PTMarkupOptionSelectedKey]) {
+        bool markupSelected = [[PdftronFlutterPlugin PT_idAsNSNumber:call.arguments[PTMarkupOptionSelectedArgumentsKey]] boolValue];
+        [self markupOptionSelected:markupSelected];
+    } else if ([call.method isEqualToString:PTCreateDocFromPageRangeWithAnnotationsKey]) {
+        NSString* sourceDocPath = [PdftronFlutterPlugin PT_idAsNSString:call.arguments[PTSourceDocPathArgumentsKey]];
+        NSNumber* startPage = [PdftronFlutterPlugin PT_idAsNSNumber:call.arguments[PTStartPageArgumentsKey]];
+        NSNumber* endPage = [PdftronFlutterPlugin PT_idAsNSNumber:call.arguments[PTEndPageArgumentsKey]];
+        NSString* xorbixAnnotations = [PdftronFlutterPlugin PT_idAsNSString:call.arguments[PTXorbixAnnotationsArgumentsKey]];
+        [self createDocFromPageRangeWithAnnotations:sourceDocPath startPage:startPage endPage:endPage annotations:xorbixAnnotations resultToken:result];
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -2350,6 +2359,73 @@
     }
     
     flutterResult(nil);
+}
+
+#pragma mark - Xorbix Functions
+- (void)markupOptionSelected:(BOOL)markupSelected 
+{
+    PTFlutterDocumentController *documentController = [self getDocumentController];
+    [documentController markupOptionSelected:markupSelected];
+}
+
+- (void)createDocFromPageRangeWithAnnotations:(NSString *)sourceDocPath startPage:(NSNumber *)startPage endPage:(NSNumber *)endPage annotations:(NSString *)annotations resultToken:(FlutterResult)flutterResult
+{
+    // Create PDFDoc for source doc and new doc
+    PTPDFDoc* sourceDoc = [[PTPDFDoc alloc] initWithFilepath:sourceDocPath];
+    PTPDFDoc* docToSend = [[PTPDFDoc alloc] init];
+
+    @try {
+
+        int sp = [startPage intValue];
+        int ep = [endPage intValue];
+
+        // Set enum values
+        PTPageSetFilter psFilter = e_ptall;
+        PTInsertFlag iFlag = e_ptinsert_none;
+
+        // Generate page set with first and last pages
+        //PTPageSet* pageSet = [[PTPageSet alloc] initWithRange_start: startPage range_end: endPage filter: psFilter];
+
+        for (int i = sp; i <= ep; i++) {
+            PTPage *page = [sourceDoc GetPage:i];
+            if (page == nil) {
+                flutterResult(@"Page is nil");
+                return;
+            }
+            if (page == NULL) {
+                flutterResult(@"Page is null");
+                return;
+            }
+            if ([page GetContents] == NULL) {
+                flutterResult([NSString stringWithFormat:@"Page %i has null contents", i]);
+                return;
+            }
+            [docToSend PagePushBack:page];
+        }
+
+        // Insert pages from source doc into new doc
+        //[docToSend InsertPages: 0 src_doc: sourceDoc start_page: startPage end_page: endPage flag: iFlag];
+
+        // Create XFDF file from annotation data
+        PTFDFDoc* annotData = [PTFDFDoc CreateFromXFDF: annotations];
+
+        // Import annotation data
+        [docToSend FDFMerge: annotData];
+
+        // Save doc as NSData
+        NSData* docData = [docToSend SaveToBuf:0];
+
+        flutterResult([docData base64EncodedStringWithOptions:0]);
+    }
+    @catch (NSException *exception) {
+        flutterResult((@"Name - %@ | Reason - %@ | Description - %@ | Debug Desc - %@", exception.name, exception.reason, exception.description, exception.debugDescription));
+    }
+    @finally {
+        [sourceDoc Close];
+        [docToSend Close];
+    }
+
+    flutterResult(@"Returned without a new document or an exception");
 }
 
 #pragma mark - Helper

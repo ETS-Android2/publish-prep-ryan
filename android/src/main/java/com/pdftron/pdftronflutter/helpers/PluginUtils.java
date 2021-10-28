@@ -15,6 +15,7 @@ import com.pdftron.pdf.Field;
 import com.pdftron.pdf.PDFDoc;
 import com.pdftron.pdf.PDFViewCtrl;
 import com.pdftron.pdf.Page;
+import com.pdftron.pdf.PageSet;
 import com.pdftron.pdf.Rect;
 import com.pdftron.pdf.ViewChangeCollection;
 import com.pdftron.pdf.annots.Markup;
@@ -43,6 +44,7 @@ import com.pdftron.pdf.widget.toolbar.builder.AnnotationToolbarBuilder;
 import com.pdftron.pdf.widget.toolbar.builder.ToolbarButtonType;
 import com.pdftron.pdf.widget.toolbar.component.DefaultToolbars;
 import com.pdftron.pdftronflutter.R;
+import com.pdftron.sdf.SDFDoc;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -85,6 +87,13 @@ public class PluginUtils {
     public static final String KEY_ANNOTATION_PROPERTIES = "annotationProperties";
     public static final String KEY_LEADING_NAV_BUTTON_ICON = "leadingNavButtonIcon";
     public static final String KEY_REQUESTED_ORIENTATION = "requestedOrientation";
+
+    // Xorbix
+    public static final String KEY_MARKUP_SELECTED = "markupSelected";
+    public static final String KEY_SOURCE_DOC_PATH = "sourceDocPath";
+    public static final String KEY_START_PAGE = "startPage";
+    public static final String KEY_END_PAGE = "endPage";
+    public static final String KEY_XORBIX_ANNOTATIONS = "annotations";
 
     public static final String KEY_CONFIG_DISABLED_ELEMENTS = "disabledElements";
     public static final String KEY_CONFIG_DISABLED_TOOLS = "disabledTools";
@@ -214,6 +223,10 @@ public class PluginUtils {
     public static final String FUNCTION_GET_PAGE_ROTATION = "getPageRotation";
     public static final String FUNCTION_OPEN_ANNOTATION_LIST = "openAnnotationList";
     public static final String FUNCTION_SET_REQUESTED_ORIENTATION = "setRequestedOrientation";
+
+    // Xorbix
+    public static final String FUNCTION_MARKUP_OPTION_SELECTED = "markupOptionSelected";
+    public static final String FUNCTION_CREATE_DOC_FROM_PAGE_RANGE_WITH_ANNOTATIONS = "createDocFromPageRangeWithAnnotations";
 
     public static final String BUTTON_TOOLS = "toolsButton";
     public static final String BUTTON_SEARCH = "searchButton";
@@ -1743,6 +1756,11 @@ public class PluginUtils {
                 openAnnotationList(component);
                 break;
             }
+            case FUNCTION_MARKUP_OPTION_SELECTED: {
+                checkFunctionPrecondition(component);
+                boolean markupSelected = call.argument(KEY_MARKUP_SELECTED);
+                markupOptionSelected(component, markupSelected);
+            }
             case FUNCTION_IMPORT_ANNOTATION_COMMAND: {
                 checkFunctionPrecondition(component);
                 String xfdfCommand = call.argument(KEY_XFDF_COMMAND);
@@ -1873,6 +1891,20 @@ public class PluginUtils {
                     getPageRotation(pageNumber, result, component);
                 }
                 break;
+            }
+            case FUNCTION_CREATE_DOC_FROM_PAGE_RANGE_WITH_ANNOTATIONS: {
+                String sourceDocPath = call.argument(KEY_SOURCE_DOC_PATH);
+                Integer startPage = call.argument(KEY_START_PAGE);
+                Integer endPage = call.argument(KEY_END_PAGE);
+                String annotations = call.argument(KEY_XORBIX_ANNOTATIONS);
+                if (sourceDocPath != null && startPage != null && endPage != null && annotations != null) {
+                    try {
+                        createDocFromPageRangeWithAnnotations(sourceDocPath, startPage, endPage, annotations, result);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        result.error("Exception", ex.getMessage(), null);
+                    }
+                }
             }
             default:
                 Log.e("PDFTronFlutter", "notImplemented: " + call.method);
@@ -2090,6 +2122,43 @@ public class PluginUtils {
                 if (isAnnotationListVisible) {
                     component.getPdfViewCtrlTabHostFragment().onOutlineOptionSelected(0);
                 }
+            }
+        }
+    }
+
+    private static void markupOptionSelected(ViewerComponent component, boolean markupSelected) {
+        PDFViewCtrl pdfViewCtrl = component.getPdfViewCtrl();
+        ToolManager toolManager = component.getToolManager();
+
+        // TODO: Figure out how to force show/hide the toolbars from here
+    }
+
+    private static void createDocFromPageRangeWithAnnotations(String sourceDocPath, int startPage, int endPage, String annotations, MethodChannel.Result result) {
+        PDFDoc sourceDoc = null;
+        PDFDoc docToSend = null;
+
+        try {
+            sourceDoc = new PDFDoc(sourceDocPath);
+            docToSend = new PDFDoc();
+
+            PageSet pageSet = new PageSet(startPage, endPage);
+
+            docToSend.insertPages(0, sourceDoc, pageSet, PDFDoc.InsertBookmarkMode.NONE, null);
+
+            FDFDoc annotData = new FDFDoc(annotations);
+
+            docToSend.fdfMerge(annotData);
+
+            byte[] docData = docToSend.save(SDFDoc.SaveMode.COMPATIBILITY, null);
+            result.success(Base64.encodeToString(docData, Base64.DEFAULT));
+        } catch (Exception e) {
+            // do something
+            result.error("Error creating new document", e.getMessage(), null);
+        } finally {
+            try {
+                if (sourceDoc != null) sourceDoc.close();
+                if (docToSend != null) docToSend.close();
+            } catch (Exception ex) {
             }
         }
     }

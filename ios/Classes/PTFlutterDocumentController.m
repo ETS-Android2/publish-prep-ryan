@@ -121,6 +121,12 @@ static BOOL PT_addMethod(Class cls, SEL selector, void (^block)(id))
     return !self.topAppNavBarHidden;;
 }
 
+- (void)markupOptionSelected:(BOOL) markupSelected
+{
+    _markupOptionSelected = markupSelected;
+    [self setControlsHidden:false animated: true];
+}
+
 - (BOOL)controlsHidden
 {
     if (self.navigationController) {
@@ -136,6 +142,8 @@ static BOOL PT_addMethod(Class cls, SEL selector, void (^block)(id))
 
 - (void)setControlsHidden:(BOOL)controlsHidden animated:(BOOL)animated
 {
+    // Xorbix - use this if we want to be able to control when tools are shown/hidden based on user selected markup options
+    BOOL hideControls = controlsHidden || !_markupOptionSelected;
     [super setControlsHidden:controlsHidden animated:animated];
     
     // When the top toolbars are enabled...
