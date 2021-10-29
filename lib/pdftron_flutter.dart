@@ -7,6 +7,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 
 part 'options.dart';
 part 'document_view.dart';
@@ -21,7 +24,7 @@ class PdftronFlutter {
   /// The current version of the PDFTron SDK.
   static Future<String> get platformVersion async {
     final String version =
-    await _channel.invokeMethod(Functions.getPlatformVersion);
+        await _channel.invokeMethod(Functions.getPlatformVersion);
     return version;
   }
 
@@ -35,7 +38,7 @@ class PdftronFlutter {
   ///
   /// To run in demo mode, pass an empty string to [licenseKey]. This function must
   /// be called before opening any document, whether using [PdftronFlutter] or [DocumentView].
-  static Future<void> initialize(String licenseKey) {
+  static Future<void> initialize([String licenseKey = ""]) {
     return _channel.invokeMethod(Functions.initialize,
         <String, dynamic>{Parameters.licenseKey: licenseKey});
   }
@@ -129,6 +132,17 @@ class PdftronFlutter {
         <String, dynamic>{Parameters.bookmarkJson: bookmarkJson});
   }
 
+  /// Creates a new bookmark with the given title and page number.
+  /// 
+  /// [pageNumber] is 1-indexed
+  static Future<void> addBookmark(String title, int pageNumber) {
+    return _channel
+        .invokeMethod(Functions.addBookmark, <String, dynamic>{
+      Parameters.title: title,
+      Parameters.pageNumber: pageNumber
+    });
+  }
+
   /// Saves the currently opened document in the viewer.
   ///
   /// Also gets the absolute path to the document. Must only
@@ -159,7 +173,7 @@ class PdftronFlutter {
 
   /// Gets a map object of the crop box for the specified page.
   ///
-  /// The specified page number is 1-indexed.
+  /// [pageNumber] is 1-indexed.
   static Future<Rect> getPageCropBox(int pageNumber) async {
     String cropBoxString = await _channel.invokeMethod(Functions.getPageCropBox,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -168,7 +182,7 @@ class PdftronFlutter {
 
   /// Gets the rotation value of the specified page in the current document.
   ///
-  /// The specified page number is 1-indexed.
+  /// [pageNumber] is 1-indexed.
   static Future<int> getPageRotation(int pageNumber) async {
     int pageRotation = await _channel.invokeMethod(Functions.getPageRotation,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -177,7 +191,7 @@ class PdftronFlutter {
 
   /// Sets current page of the document.
   ///
-  /// The specified page number is 1-indexed.
+  /// [pageNumber] is 1-indexed.
   static Future<bool?> setCurrentPage(int pageNumber) {
     return _channel.invokeMethod(Functions.setCurrentPage,
         <String, dynamic>{Parameters.pageNumber: pageNumber});
@@ -241,6 +255,9 @@ class PdftronFlutter {
     return _channel.invokeMethod(Functions.deleteAllAnnotations);
   }
 
+  /// Displays the annotation tab of the existing list container. 
+  /// 
+  /// If this tab has been disabled, the method does nothing.
   static Future<void> openAnnotationList() {
     return _channel.invokeMethod(Functions.openAnnotationList);
   }
@@ -250,7 +267,7 @@ class PdftronFlutter {
   /// iOS only right now
   Future<void> markupOptionSelected(bool markupSelected) {
     return _channel.invokeMethod(Functions.markupOptionSelected,
-        <String, dynamic>{Parameters.markupSelected: markupSelected});
+      <String, dynamic>{Parameters.markupSelected: markupSelected});
   }
 
   /// Create a document using a subset of pages from the original document
@@ -258,17 +275,47 @@ class PdftronFlutter {
   /// Accepts the filepath for the original document, the start and end pages, and the annotations to import
   static Future<dynamic> createDocFromPageRangeWithAnnotations(String sourceDocPath, int startPage, int endPage, String annotations) {
     return _channel.invokeMethod(Functions.createDocFromPageRangeWithAnnotations,
-        <String, dynamic>{
-          Parameters.sourceDocPath: sourceDocPath,
-          Parameters.startPage: startPage,
-          Parameters.endPage: endPage,
-          Parameters.xorbixAnnotations: annotations
-        });
+      <String, dynamic>{
+        Parameters.sourceDocPath: sourceDocPath,
+        Parameters.startPage: startPage,
+        Parameters.endPage: endPage,
+        Parameters.xorbixAnnotations: annotations
+      });
   }
 
-  // Android only.
   static Future<void> setRequestedOrientation(int requestedOrientation) {
     return _channel.invokeMethod(Functions.setRequestedOrientation,
         <String, dynamic>{Parameters.requestedOrientation: requestedOrientation});
+  }
+
+  /// Go to the previous page of the document. 
+  /// 
+  /// If on first page, it will stay on first page.
+  static Future<bool?> gotoPreviousPage() {
+    return _channel.invokeMethod(Functions.gotoPreviousPage);
+  }
+
+  /// Go to the next page of the document.
+  /// 
+  /// If on last page, it will stay on last page.
+  static Future<bool?> gotoNextPage() {
+    return _channel.invokeMethod(Functions.gotoNextPage);
+  }
+
+  /// Go to the first page of the document.
+  static Future<bool?> gotoFirstPage() {
+    return _channel.invokeMethod(Functions.gotoFirstPage);
+  }
+
+  /// Go to the last page of the document.
+  static Future<bool?> gotoLastPage() {
+    return _channel.invokeMethod(Functions.gotoLastPage);
+  }
+
+  /// Gets the current page of the document.
+  /// 
+  /// The page numbers returned are 1-indexed.
+  static Future<int?> getCurrentPage() {
+    return _channel.invokeMethod(Functions.getCurrentPage);
   }
 }
