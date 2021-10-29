@@ -249,7 +249,7 @@ class DocumentViewController {
   Future<void> openAnnotationList() {
     return _channel.invokeMethod(Functions.openAnnotationList);
   }
-
+/*
   /// Determines visibility of toolbar
   /// Xorbix function
   Future<void> markupOptionSelected(bool markupSelected) {
@@ -268,5 +268,5 @@ class DocumentViewController {
           Parameters.endPage: endPage,
           Parameters.xorbixAnnotations: annotations
         });
-  }
+  }*/
 }
